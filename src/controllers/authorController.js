@@ -10,7 +10,11 @@ const getAllAuthors = asyncHandler(async (req, res) => {
 })
 
 const getSingleAuthor = asyncHandler(async (req, res) => {
-    const author = await Author.findById(req.params.id);
+    const author = await Author.findById(req.params.id)
+        .populate({
+            path: "books",
+            select: "title pages price"
+        });
     if (!author) {
         throw new AppError("Author not found", 404);
     }
@@ -59,4 +63,4 @@ const deleteAuthor = asyncHandler(async (req, res) => {
     });
 })
 
-module.exports = { getAllAuthors, getSingleAuthor , createAuthor, updateAuthor, deleteAuthor };
+module.exports = { getAllAuthors, getSingleAuthor, createAuthor, updateAuthor, deleteAuthor };

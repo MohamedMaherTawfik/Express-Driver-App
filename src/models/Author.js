@@ -39,4 +39,17 @@ const authorSchema = new mongoose.Schema(
     }
 );
 
+authorSchema.virtual("books", {
+    ref: "Book",
+    localField: "_id",
+    foreignField: "author"
+});
+
+authorSchema.set("toJSON", {
+    virtuals: true
+});
+
+authorSchema.set("toObject", {
+    virtuals: true
+});
 module.exports = mongoose.model("Author", authorSchema);

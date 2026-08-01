@@ -1,6 +1,6 @@
 ✅ 1. CRUD + Mongoose Models (خلصناها)
 
-✅ 2. Validation (express-validator)
+✅ 2. Validation (express-validator) == done
 
 ✅ 3. MongoDB Relations
    - ref

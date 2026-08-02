@@ -2,6 +2,7 @@ const express = require("express");
 
 const bookRoutes = require("./routes/bookRoutes");
 const authorsRoutes = require("./routes/authorRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 const ApiKey = require("./middlewares/checkApiKey");
@@ -15,6 +16,7 @@ app.use('/authors', logger , ApiKey , form.none());
 app.use("/authors", authorsRoutes);
 app.use("/books", logger , ApiKey , form.none() );
 app.use("/books", bookRoutes );
+app.use("/api/auth", authRoutes);
 
 app.use(errorMiddleware );
 module.exports = app;

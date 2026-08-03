@@ -1,17 +1,16 @@
+const UnauthorizedError = require("../errors/UnauthorizedError");
+
 const checkApiKey = (req, res, next) => {
     const apiKey = req.headers["x-api-key"];
+
     if (!apiKey) {
-        return res.status(401).json({
-            success: false,
-            message: "API Key is required"
-        });
+        throw new UnauthorizedError("API Key is required");
     }
+
     if (apiKey !== process.env.API_KEY) {
-        return res.status(401).json({
-            success: false,
-            message: "Invalid API Key"
-        });
+        throw new UnauthorizedError("Invalid API Key");
     }
+
     next();
 };
 

@@ -1,69 +1,41 @@
-class ApiResponse {
+const httpStatus = require("../constants/httpStatus");
 
-    static ok(res, data = null, message = "Success") {
-        return res.status(200).json({
-            success: true,
-            message,
-            data
-        });
+class ApiResponse {
+    static ok(res, data = null, message = undefined, meta = null) {
+        const response = {
+            success: true
+        };
+
+        if (message) {
+            response.message = message;
+        }
+
+        response.data = data;
+
+        if (meta) {
+            response.meta = meta;
+        }
+
+        return res.status(httpStatus.OK).json(response);
     }
 
-    static created(res, data = null, message = "Created Successfully") {
-        return res.status(201).json({
-            success: true,
-            message,
-            data
-        });
+    static created(res, data = null, message = undefined) {
+        const response = {
+            success: true
+        };
+
+        if (message) {
+            response.message = message;
+        }
+
+        response.data = data;
+
+        return res.status(httpStatus.CREATED).json(response);
     }
 
     static noContent(res) {
-        return res.status(204).send();
+        return res.status(httpStatus.NO_CONTENT).send();
     }
-
-    static badRequest(res, message = "Bad Request", errors = null) {
-        return res.status(400).json({
-            success: false,
-            message,
-            errors
-        });
-    }
-
-    static unauthorized(res, message = "Unauthorized") {
-        return res.status(401).json({
-            success: false,
-            message
-        });
-    }
-
-    static forbidden(res, message = "Forbidden") {
-        return res.status(403).json({
-            success: false,
-            message 
-        });
-    }
-
-    static notFound(res, message = "Resource Not Found") {
-        return res.status(404).json({
-            success: false,
-            message
-        });
-    }
-
-    static validationError(res, errors, message = "Validation Error") {
-        return res.status(422).json({
-            success: false,
-            message,
-            errors
-        });
-    }
-
-    static serverError(res, message = "Internal Server Error") {
-        return res.status(500).json({
-            success: false,
-            message
-        });
-    }
-
 }
 
 module.exports = ApiResponse;

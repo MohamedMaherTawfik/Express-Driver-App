@@ -14,10 +14,10 @@ app.use(express.json());
 
 app.use('/authors', logger , ApiKey , form.none());
 app.use("/authors", authorsRoutes);
-app.use("/books", logger , ApiKey , form.none() );
+app.use("/books", logger , ApiKey);
 app.use("/books", bookRoutes );
 app.use("/api/auth", authRoutes);
 
-app.use(errorMiddleware );
 app.use("/uploads", express.static("src/uploads"));
+app.use(errorMiddleware );
 module.exports = app;

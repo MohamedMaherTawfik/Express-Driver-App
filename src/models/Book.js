@@ -21,7 +21,11 @@ const bookSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Author",
         required: true
-    }
+    },
+    image: {
+        type: String,
+        default: null
+    },
 },
 
     {

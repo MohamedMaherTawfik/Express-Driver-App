@@ -43,12 +43,16 @@ const getSingleBook = asyncHandler(async (req, res) => {
 
 const createBook = asyncHandler(async (req, res) => {
 
-    const author = await Author.findById(req.body.author);
-    if (!author) {
-        return apiResponse.notFound(res, "Author not found");
-    }
-    const book = await Book.create(req.body);
-    apiResponse.created(res, book, "Book Created Successfully")
+    const book = await Book.create({
+        ...req.body,
+        image: req.file.filename
+    });
+
+    return ApiResponse.created(
+        res,
+        book,
+        "Book Created Successfully"
+    );
 });
 
 const updateBook = asyncHandler(async (req, res) => {

@@ -13,7 +13,9 @@ const validationMiddleware = require("../middlewares/validationMiddleware");
 
 router.get("/", getAllBook);
 router.get("/:id", getSingleBook);
-router.post("/", createBookValidator, validationMiddleware, createBook);
+router.post("/", protect,
+    authorize("admin"),
+    upload.single("image"), createBookValidator, validationMiddleware, createBook);
 router.put("/:id", updateBook);
 router.delete("/:id", protect , authorize('admin') , deleteBook);
 

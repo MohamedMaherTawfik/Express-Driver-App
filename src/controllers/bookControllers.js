@@ -4,6 +4,7 @@ const asyncHandler = require("../utils/asyncHandler");
 const apiResponse = require("../utils/response");
 const ApiResponse = require("../utils/response");
 const ApiFeatures = require("../utils/apiFeatures");
+const cloudinaryService = require("../services/cloudinaryService");
 
 const getAllBook = asyncHandler(async (req, res) => {
     const page = Number(req.query.page) || 1;
@@ -42,12 +43,21 @@ const getSingleBook = asyncHandler(async (req, res) => {
 });
 
 const createBook = asyncHandler(async (req, res) => {
-
+    const author = await Author.findById(req.body.author);
+    if (!author) {
+        return ApiResponse.notFound(res, "Author not found");
+    }
+    let image = null;
+    if (req.file) {
+        image = await cloudinaryService.uploadImage(req.file);
+    }
     const book = await Book.create({
-        ...req.body,
-        image: req.file.filename
+        title: req.body.title,
+        pages: req.body.pages,
+        price: req.body.price,
+        author: req.body.author,
+        image
     });
-
     return ApiResponse.created(
         res,
         book,

@@ -8,26 +8,28 @@ const bookSchema = new mongoose.Schema({
         minlength: 3,
         maxlength: 50
     },
-
     pages: {
         type: Number
     },
-
     price: {
         type: Number
     },
-
     author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Author",
         required: true
     },
     image: {
-        type: String,
-        default: null
+        url: {
+            type: String,
+            default: null
+        },
+        public_id: {
+            type: String,
+            default: null
+        }
     },
 },
-
     {
         timestamps: true
     }

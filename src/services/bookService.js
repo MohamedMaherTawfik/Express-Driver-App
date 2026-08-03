@@ -1,11 +1,18 @@
 const NotFoundError = require("../errors/NotFoundError");
+
 const authorRepository = require("../repositories/authorRepository");
 const bookRepository = require("../repositories/bookRepository");
+
 const bookQueryHelper = require("../helpers/bookQueryHelper");
+
 const cloudinaryService = require("./cloudinaryService");
 
+const logger = require("../config/logger");
+
 class BookService {
+
     async getAll(query) {
+
         const filter = bookQueryHelper.buildFilter(query);
         const pagination = bookQueryHelper.buildPagination(query);
         const sort = bookQueryHelper.buildSort(query);
@@ -28,9 +35,11 @@ class BookService {
                 totalItems
             })
         };
+
     }
 
     async getById(id) {
+
         const book = await bookRepository.findByIdWithAuthor(id);
 
         if (!book) {
@@ -38,25 +47,39 @@ class BookService {
         }
 
         return book;
+
     }
 
     async create(bookData, file) {
+
         await this.ensureAuthorExists(bookData.author);
 
-        const image = file
-            ? await cloudinaryService.uploadImage(file)
-            : null;
+        let image = null;
 
-        return bookRepository.create({
+        if (file) {
+            image = await cloudinaryService.uploadImage(file);
+        }
+
+        const book = await bookRepository.create({
             title: bookData.title,
             pages: bookData.pages,
             price: bookData.price,
             author: bookData.author,
             image
         });
+
+        logger.info("Book created", {
+            bookId: book._id.toString(),
+            title: book.title,
+            authorId: book.author.toString()
+        });
+
+        return book;
+
     }
 
     async update(id, bookData, file) {
+
         const book = await bookRepository.findById(id);
 
         if (!book) {
@@ -70,14 +93,29 @@ class BookService {
         const updateData = this.buildUpdateData(bookData);
 
         if (file) {
+
             updateData.image = await cloudinaryService.uploadImage(file);
+
             await this.deleteImageIfExists(book);
+
         }
 
-        return bookRepository.updateById(id, updateData);
+        const updatedBook = await bookRepository.updateById(
+            id,
+            updateData
+        );
+
+        logger.info("Book updated", {
+            bookId: updatedBook._id.toString(),
+            title: updatedBook.title
+        });
+
+        return updatedBook;
+
     }
 
     async delete(id) {
+
         const book = await bookRepository.findById(id);
 
         if (!book) {
@@ -85,36 +123,59 @@ class BookService {
         }
 
         await this.deleteImageIfExists(book);
+
         await bookRepository.deleteById(id);
+
+        logger.info("Book deleted", {
+            bookId: book._id.toString(),
+            title: book.title
+        });
+
     }
 
     async ensureAuthorExists(authorId) {
+
         const author = await authorRepository.findById(authorId);
 
         if (!author) {
             throw new NotFoundError("Author");
         }
+
     }
 
     buildUpdateData(bookData) {
-        const allowedFields = ["title", "pages", "price", "author"];
 
-        return allowedFields.reduce((updateData, field) => {
+        const allowedFields = [
+            "title",
+            "pages",
+            "price",
+            "author"
+        ];
+
+        return allowedFields.reduce((data, field) => {
+
             if (bookData[field] !== undefined) {
-                updateData[field] = bookData[field];
+                data[field] = bookData[field];
             }
 
-            return updateData;
+            return data;
+
         }, {});
+
     }
 
     async deleteImageIfExists(book) {
+
         if (!book.image?.public_id) {
             return;
         }
 
-        await cloudinaryService.deleteImage(book.image.public_id);
+        await cloudinaryService.deleteImage(
+            book.image.public_id
+        );
+
     }
+
 }
 
 module.exports = new BookService();

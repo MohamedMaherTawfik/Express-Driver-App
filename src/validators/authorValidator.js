@@ -1,13 +1,18 @@
 const { body } = require("express-validator");
 
 const createAuthorValidation = [
+
     body("name")
+        .trim()
         .notEmpty()
         .withMessage("Name is required")
-        .isLength({ min: 3 })
-        .withMessage("Name must be at least 3 characters"),
+        .isLength({ min: 3, max: 100 })
+        .withMessage("Name must be between 3 and 100 characters")
+        .escape(),
 
     body("email")
+        .trim()
+        .normalizeEmail()
         .notEmpty()
         .withMessage("Email is required")
         .isEmail()
@@ -15,10 +20,11 @@ const createAuthorValidation = [
 
     body("age")
         .optional()
-        .isInt({ min: 18 })
-        .withMessage("Age must be at least 18")
+        .isInt({ min: 18, max: 120 })
+        .withMessage("Age must be between 18 and 120")
+
 ];
 
 module.exports = {
     createAuthorValidation
-}; 
+};

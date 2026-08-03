@@ -1,30 +1,33 @@
 const { body } = require("express-validator");
-const mongoose = require("mongoose");
 
 const createBookValidator = [
+
     body("title")
+        .trim()
         .notEmpty()
-        .withMessage("title is required")
-        .isLength({ min: 3 })
-        .withMessage("title must be at least 3 characters"),
+        .withMessage("Title is required")
+        .isLength({ min: 3, max: 200 })
+        .withMessage("Title must be between 3 and 200 characters")
+        .escape(),
 
     body("pages")
         .optional()
-        .isNumeric()
-        .withMessage("pages Must Be Number"),
+        .isInt({ min: 1 })
+        .withMessage("Pages must be a positive integer"),
 
     body("price")
         .optional()
-        .isNumeric()
-        .withMessage("price Must Be Number"),
+        .isFloat({ min: 0 })
+        .withMessage("Price must be a positive number"),
 
     body("author")
         .notEmpty()
         .withMessage("Author is required")
-        .custom(value => mongoose.Types.ObjectId.isValid(value))
-        .withMessage("Invalid author id"),
+        .isMongoId()
+        .withMessage("Invalid author id")
+
 ];
 
 module.exports = {
     createBookValidator
-}; 
+};

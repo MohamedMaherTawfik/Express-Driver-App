@@ -1,23 +1,84 @@
 const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
+const compression = require("compression");
+const hpp = require("hpp");
+const cookieParser = require("cookie-parser");
 
+const rateLimiter = require("./middlewares/rateLimiter");
+const apiKey = require("./middlewares/checkApiKey");
+const upload = require("./middlewares/upload");
+const errorMiddleware = require("./middlewares/errorMiddleware");
+
+const NotFoundError = require("./errors/NotFoundError");
+
+const authorRoutes = require("./routes/authorRoutes");
 const bookRoutes = require("./routes/bookRoutes");
-const authorsRoutes = require("./routes/authorRoutes");
 const authRoutes = require("./routes/authRoutes");
+const requestLogger = require("./middlewares/requestLogger");
 
 const app = express();
-const ApiKey = require("./middlewares/checkApiKey");
-const logger = require("./middlewares/logger");
-const form = require("./middlewares/upload");
-const errorMiddleware  = require("./middlewares/errorMiddleware");
+
+/* ===========================
+        App Settings
+=========================== */
+
+app.disable("x-powered-by");
+app.set("trust proxy", 1);
+
+/* ===========================
+      Global Middlewares
+=========================== */
+
+app.use(helmet());
+
+app.use(compression());
+
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true
+}));
+
+app.use(rateLimiter);
 
 app.use(express.json());
 
-app.use('/authors', logger , ApiKey , form.none());
-app.use("/authors", authorsRoutes);
-app.use("/books", logger , ApiKey);
-app.use("/books", bookRoutes );
-app.use("/api/auth", authRoutes);
+app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser());
+
+app.use(hpp());
+
+app.use(requestLogger);
+
+/* ===========================
+        Static Files
+=========================== */
 
 app.use("/uploads", express.static("src/uploads"));
-app.use(errorMiddleware );
+
+/* ===========================
+            Routes
+=========================== */
+
+app.use("/api/auth", authRoutes);
+
+app.use("/authors", apiKey, upload.none(), authorRoutes);
+
+app.use("/books", apiKey, bookRoutes);
+
+/* ===========================
+        404 Handler
+=========================== */
+
+app.all("*", (req, res, next) => {
+    next(new NotFoundError("Route"));
+});
+
+/* ===========================
+    Global Error Handler
+=========================== */
+
+app.use(errorMiddleware);
+
 module.exports = app;

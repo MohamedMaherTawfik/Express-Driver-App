@@ -19,4 +19,5 @@ app.use("/books", bookRoutes );
 app.use("/api/auth", authRoutes);
 
 app.use(errorMiddleware );
+app.use("/uploads", express.static("src/uploads"));
 module.exports = app;

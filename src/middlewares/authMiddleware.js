@@ -34,6 +34,19 @@ const protect = asyncHandler(async (req, res, next) => {
     next();
 });
 
+const authorize = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            return ApiResponse.forbidden(
+                res,
+                "You are not allowed to access this resource"
+            );
+        }
+        next();
+    };
+};
+
 module.exports = {
-    protect
+    protect,
+    authorize
 };

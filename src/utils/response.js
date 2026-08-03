@@ -38,7 +38,7 @@ class ApiResponse {
     static forbidden(res, message = "Forbidden") {
         return res.status(403).json({
             success: false,
-            message
+            message 
         });
     }
 

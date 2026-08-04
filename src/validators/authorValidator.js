@@ -9,6 +9,12 @@ const createAuthorValidation = [
         .isLength({ min: 3, max: 100 })
         .withMessage("Name must be between 3 and 100 characters"),
 
+    body("bio")
+        .optional()
+        .trim()
+        .isLength({ max: 1000 })
+        .withMessage("Bio must not exceed 1000 characters"),
+
     body("email")
         .trim()
         .normalizeEmail()

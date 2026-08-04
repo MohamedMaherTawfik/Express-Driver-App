@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const BadRequestError = require("../errors/BadRequestError");
 const UnauthorizedError = require("../errors/UnauthorizedError");
-
+const pick = require("../helpers/pickHelper");
 const userRepository = require("../repositories/userRepository");
 const logger = require("../config/logger");
 
@@ -27,7 +27,9 @@ class AuthService {
 
         }
 
-        const user = await userRepository.create(userData);
+        const filteredData = pick(userData, ["name", "email", "password"]);
+
+        const user = await userRepository.create(filteredData);
 
         logger.info("User registered", {
             userId: user._id.toString(),

@@ -1,5 +1,6 @@
 const cloudinary = require("../config/cloudinary");
 const streamifier = require("streamifier");
+
 const logger = require("../config/logger");
 
 class CloudinaryService {
@@ -10,7 +11,16 @@ class CloudinaryService {
 
             const uploadStream = cloudinary.uploader.upload_stream(
                 {
-                    folder
+                    folder,
+                    resource_type: "image",
+                    overwrite: false,
+                    unique_filename: true,
+                    allowed_formats: [
+                        "jpg",
+                        "jpeg",
+                        "png",
+                        "webp"
+                    ]
                 },
                 (error, result) => {
 
@@ -18,16 +28,16 @@ class CloudinaryService {
 
                         logger.error("Cloudinary upload failed", {
                             message: error.message,
-                            stack: error.stack
+                            folder
                         });
 
                         return reject(error);
+
                     }
 
                     logger.info("Image uploaded", {
                         publicId: result.public_id,
-                        folder,
-                        url: result.secure_url
+                        folder
                     });
 
                     resolve({
@@ -47,6 +57,10 @@ class CloudinaryService {
     }
 
     async deleteImage(publicId) {
+
+        if (!publicId) {
+            return;
+        }
 
         const result = await cloudinary.uploader.destroy(publicId);
 

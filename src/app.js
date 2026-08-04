@@ -9,14 +9,11 @@ const rateLimiter = require("./middlewares/rateLimiter");
 const apiKey = require("./middlewares/checkApiKey");
 const upload = require("./middlewares/upload");
 const errorMiddleware = require("./middlewares/errorMiddleware");
-
 const NotFoundError = require("./errors/NotFoundError");
-
 const authorRoutes = require("./routes/authorRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const authRoutes = require("./routes/authRoutes");
 const requestLogger = require("./middlewares/requestLogger");
-
 const app = express();
 
 /* ===========================

@@ -1,42 +1,102 @@
 class BookQueryHelper {
     buildFilter(query) {
-        const queryObject = { ...query };
-        const excludedFields = ["page", "sort", "limit", "search"];
+        const filter = {};
 
-        excludedFields.forEach(field => delete queryObject[field]);
-
-        let queryString = JSON.stringify(queryObject);
-        queryString = queryString.replace(
-            /\b(gt|gte|lt|lte|in)\b/g,
-            match => `$${match}`
-        );
-
-        const filter = JSON.parse(queryString);
-
-        if (query.search) {
+        // Search
+        if (typeof query.search === "string" && query.search.trim()) {
             filter.title = {
-                $regex: query.search,
+                $regex: query.search.trim(),
                 $options: "i"
             };
         }
+
+        // Allowed filter fields only
+        const allowedFilters = [
+            "author",
+            "price",
+            "pages"
+        ];
+
+        // Allowed operators only
+        const allowedOperators = [
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "in"
+        ];
+
+        allowedFilters.forEach(field => {
+            if (query[field] === undefined) {
+                return;
+            }
+
+            const value = query[field];
+
+            // Example:
+            // ?price[gte]=100
+            if (
+                typeof value === "object" &&
+                value !== null &&
+                !Array.isArray(value)
+            ) {
+                filter[field] = {};
+
+                Object.keys(value).forEach(operator => {
+                    if (allowedOperators.includes(operator)) {
+                        filter[field][`$${operator}`] = value[operator];
+                    }
+                });
+
+                if (Object.keys(filter[field]).length === 0) {
+                    delete filter[field];
+                }
+
+                return;
+            }
+
+            // Normal equality
+            filter[field] = value;
+        });
 
         return filter;
     }
 
     buildPagination(query) {
-        const page = Number(query.page) || 1;
-        const limit = Number(query.limit) || 10;
-        const skip = (page - 1) * limit;
+        const page = Math.max(Number(query.page) || 1, 1);
+
+        // Max 100 items per request
+        const limit = Math.min(
+            Math.max(Number(query.limit) || 10, 1),
+            100
+        );
 
         return {
             page,
             limit,
-            skip
+            skip: (page - 1) * limit
         };
     }
 
     buildSort(query) {
-        return query.sort || "-createdAt";
+        const allowedSortFields = [
+            "title",
+            "price",
+            "pages",
+            "createdAt"
+        ];
+
+        if (!query.sort) {
+            return "-createdAt";
+        }
+
+        const field = query.sort.replace("-", "");
+
+        if (!allowedSortFields.includes(field)) {
+            return "-createdAt";
+        }
+
+        return query.sort;
     }
 
     buildPaginationMeta({ page, limit, totalItems }) {

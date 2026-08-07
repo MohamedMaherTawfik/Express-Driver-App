@@ -8,17 +8,26 @@ const refreshTokenSchema = new mongoose.Schema(
             required: true,
             index: true
         },
+
         tokenHash: {
             type: String,
             required: true,
             unique: true,
             index: true
         },
+
+        familyId: {
+            type: String,
+            required: true,
+            index: true
+        },
+
         expiresAt: {
             type: Date,
             required: true,
             index: true
         },
+
         revokedAt: {
             type: Date,
             default: null

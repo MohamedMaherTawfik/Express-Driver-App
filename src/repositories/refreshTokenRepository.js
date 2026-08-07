@@ -39,6 +39,17 @@ class RefreshTokenRepository {
         );
     }
 
+    async revokeFamily(familyId) {
+        return await RefreshToken.updateMany(
+            {
+                familyId,
+                revokedAt: null
+            },
+            {
+                revokedAt: new Date()
+            }
+        );
+    }
 }
 
 module.exports = new RefreshTokenRepository();

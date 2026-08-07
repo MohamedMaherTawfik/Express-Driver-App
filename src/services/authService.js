@@ -89,6 +89,8 @@ class AuthService {
 
         const accessToken = this.generateAccessToken(user);
 
+        const familyId = crypto.randomUUID();
+
         const {
             refreshToken,
             refreshTokenHash,
@@ -98,6 +100,7 @@ class AuthService {
         await refreshTokenRepository.create({
             user: user._id,
             tokenHash: refreshTokenHash,
+            familyId,
             expiresAt
         });
 
@@ -217,74 +220,118 @@ class AuthService {
     }
 
     async refreshAccessToken(refreshToken) {
+
         if (!refreshToken) {
             throw new UnauthorizedError(
                 "Refresh token is required"
             );
         }
+
         const refreshTokenHash = crypto
             .createHash("sha256")
             .update(refreshToken)
             .digest("hex");
+
         const storedToken =
             await refreshTokenRepository.findByTokenHash(
                 refreshTokenHash
             );
+
         if (!storedToken) {
+
             logger.warn("Refresh token failed", {
                 reason: "Token not found"
             });
+
             throw new UnauthorizedError(
                 "Invalid refresh token"
             );
         }
+
+        /*
+         * Refresh Token Reuse Detection
+         */
+
         if (storedToken.revokedAt) {
-            logger.warn("Refresh token failed", {
+
+            logger.warn("Refresh token reuse detected", {
                 userId: storedToken.user.toString(),
-                reason: "Token revoked"
+                familyId: storedToken.familyId
             });
+
+            await refreshTokenRepository.revokeFamily(
+                storedToken.familyId
+            );
+
             throw new UnauthorizedError(
-                "Refresh token has been revoked"
+                "Refresh token reuse detected. Please login again."
             );
         }
+
+        /*
+         * Expiration check
+         */
+
         if (storedToken.expiresAt <= new Date()) {
+
             logger.warn("Refresh token failed", {
                 userId: storedToken.user.toString(),
                 reason: "Token expired"
             });
+
             throw new UnauthorizedError(
                 "Refresh token has expired"
             );
         }
+
         const user = await userRepository.findById(
             storedToken.user
         );
+
         if (!user) {
+
             throw new UnauthorizedError(
                 "User no longer exists"
             );
         }
+
         /*
-         * Rotate refresh token
+         * Revoke old refresh token
          */
 
         await refreshTokenRepository.revokeById(
             storedToken._id
         );
-        const accessToken = this.generateAccessToken(user);
+
+        /*
+         * Generate new tokens
+         */
+
+        const accessToken =
+            this.generateAccessToken(user);
+
         const {
             refreshToken: newRefreshToken,
             refreshTokenHash: newRefreshTokenHash,
             expiresAt
         } = this.generateRefreshToken();
+
+        /*
+         * Keep same token family
+         */
+
         await refreshTokenRepository.create({
             user: user._id,
             tokenHash: newRefreshTokenHash,
+            familyId: storedToken.familyId,
             expiresAt
         });
+
         logger.info("Refresh token rotated", {
-            userId: user._id.toString()
+            userId: user._id.toString(),
+            familyId: storedToken.familyId
         });
+
         return {
             accessToken,
             refreshToken: newRefreshToken

@@ -47,3 +47,11 @@ File Security Upload
 -Huge File 
 -Maleware
 -Svg XSS 
+
+======================================================================
+======================================================================
+
+JWT Authintications:: 
+
+-Using H256 Algorithm 
+-Using the Sub Standard

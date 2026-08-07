@@ -49,7 +49,17 @@ const loginValidator = [
 
 ];
 
+const refreshTokenValidator = [
+    body("refreshToken")
+        .trim()
+        .notEmpty()
+        .withMessage("Refresh token is required")
+        .isString()
+        .withMessage("Refresh token must be a string")
+];
+
 module.exports = {
     registerValidator,
-    loginValidator
+    loginValidator,
+    refreshTokenValidator
 };

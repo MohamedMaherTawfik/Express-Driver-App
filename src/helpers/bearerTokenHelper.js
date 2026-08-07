@@ -1,11 +1,21 @@
-const getBearerToken = (req) => {
-    const authorizationHeader = req.headers.authorization;
+const UnauthorizedError = require("../errors/UnauthorizedError");
 
-    if (!authorizationHeader?.startsWith("Bearer")) {
-        return null;
+const getBearerToken = (req) => {
+
+    const authorization = req.headers.authorization;
+
+    if (!authorization) {
+        throw new UnauthorizedError("Authorization header is required");
     }
 
-    return authorizationHeader.split(" ")[1];
+    const [scheme, token] = authorization.split(" ");
+
+    if (scheme !== "Bearer" || !token) {
+        throw new UnauthorizedError("Invalid authorization header");
+    }
+
+    return token;
+
 };
 
 module.exports = getBearerToken;

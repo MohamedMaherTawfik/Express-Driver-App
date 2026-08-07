@@ -15,7 +15,8 @@ const bookRoutes = require("./routes/bookRoutes");
 const authRoutes = require("./routes/authRoutes");
 const requestLogger = require("./middlewares/requestLogger");
 const app = express();
-
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./docs/swagger");
 /* ===========================
         App Settings
 =========================== */
@@ -51,6 +52,11 @@ app.use(requestLogger);
 /* ===========================
         Static Files
 =========================== */
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec)
+);
 
 app.use("/uploads", express.static("src/uploads"));
 
@@ -68,7 +74,7 @@ app.use("/books", apiKey, bookRoutes);
         404 Handler
 =========================== */
 
-app.all("*", (req, res, next) => {
+app.use((req, res, next) => {
     next(new NotFoundError("Route"));
 });
 

@@ -8,6 +8,10 @@ const bookQueryHelper = require("../helpers/bookQueryHelper");
 const cloudinaryService = require("./cloudinaryService");
 
 const logger = require("../config/logger");
+const redisService = require("./redisService");
+const {
+    buildCacheKey
+} = require("../helpers/cacheKeyHelper");
 
 class BookService {
 
@@ -15,23 +19,39 @@ class BookService {
         const filter = bookQueryHelper.buildFilter(query);
         const pagination = bookQueryHelper.buildPagination(query);
         const sort = bookQueryHelper.buildSort(query);
-        const [books, totalItems] = await Promise.all([
-            bookRepository.findAll({
+        const cacheKey = buildCacheKey(
+            "books:list",
+            {
                 filter,
-                sort,
-                skip: pagination.skip,
-                limit: pagination.limit
-            }),
-            bookRepository.count(filter)
-        ]);
-        return {
-            books,
-            meta: bookQueryHelper.buildPaginationMeta({
                 page: pagination.page,
                 limit: pagination.limit,
-                totalItems
-            })
-        };
+                sort
+            }
+        );
+        const result = await redisService.getOrSet(
+            cacheKey,
+            async () => {
+                const [books, totalItems] = await Promise.all([
+                    bookRepository.findAll({
+                        filter,
+                        sort,
+                        skip: pagination.skip,
+                        limit: pagination.limit
+                    }),
+                    bookRepository.count(filter)
+                ]);
+                return {
+                    books,
+                    meta: bookQueryHelper.buildPaginationMeta({
+                        page: pagination.page,
+                        limit: pagination.limit,
+                        totalItems
+                    })
+                };
+            },
+            60
+        );
+        return result.data;
     }
 
     async getById(id) {
@@ -53,12 +73,13 @@ class BookService {
             filteredData.image = image;
         }
         const book = await bookRepository.create(filteredData);
+        await redisService.deleteByPrefix("books:list");
         logger.info("Book created", {
             bookId: book._id.toString(),
             title: book.title,
             authorId: book.author.toString()
         });
-        return book;    
+        return book;
     }
 
     async update(id, bookData, file) {
@@ -78,11 +99,12 @@ class BookService {
             id,
             updateData
         );
+        await redisService.deleteByPrefix("books:list");
         logger.info("Book updated", {
             bookId: updatedBook._id.toString(),
             title: updatedBook.title
         });
-        return updatedBook; 
+        return updatedBook;
     }
 
     async delete(id) {
@@ -96,7 +118,7 @@ class BookService {
         await this.deleteImageIfExists(book);
 
         await bookRepository.deleteById(id);
-
+        await redisService.deleteByPrefix("books:list");
         logger.info("Book deleted", {
             bookId: book._id.toString(),
             title: book.title

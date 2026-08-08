@@ -13,6 +13,7 @@ const NotFoundError = require("./errors/NotFoundError");
 const authorRoutes = require("./routes/authorRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const authRoutes = require("./routes/authRoutes");
+const healthRoutes = require("./routes/healthRoutes");
 const requestLogger = require("./middlewares/requestLogger");
 const app = express();
 const swaggerUi = require("swagger-ui-express");
@@ -70,6 +71,7 @@ app.use("/authors", apiKey, upload.none(), authorRoutes);
 
 app.use("/books", apiKey, bookRoutes);
 
+app.use("/health", healthRoutes);
 /* ===========================
         404 Handler
 =========================== */

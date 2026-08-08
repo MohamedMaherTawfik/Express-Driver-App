@@ -1,6 +1,7 @@
 require("dotenv-safe").config();
 const app = require("./app");
 const connectDB = require("./config/db");
+const redisService = require("./services/redisService");
 const logger = require("./config/logger");
 const mongoose = require("mongoose");
 const PORT = process.env.PORT || 3000;
@@ -8,6 +9,7 @@ let server;
 const startServer = async () => {
     try {
         await connectDB();
+        await redisService.connect();
         server = app.listen(PORT, () => {
             logger.info(
                 `🚀 Server running on http://localhost:${PORT}`
@@ -30,6 +32,7 @@ const shutdown = async (signal) => {
     logger.warn(`${signal} received. Shutting down server...`);
     if (server) {
         server.close(async () => {
+            await redisService.disconnect();
             await mongoose.connection.close();
             logger.info("MongoDB connection closed.");
             process.exit(0);

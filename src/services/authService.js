@@ -1,14 +1,13 @@
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-
+const emailService = require("./emailService");
+const welcomeEmail = require("../templates/emails/welcomeEmail");
 const BadRequestError = require("../errors/BadRequestError");
 const UnauthorizedError = require("../errors/UnauthorizedError");
-
+const emailVerificationService = require("./emailVerificationService");
 const pick = require("../helpers/pickHelper");
-
 const userRepository = require("../repositories/userRepository");
 const refreshTokenRepository = require("../repositories/refreshTokenRepository");
-
 const logger = require("../config/logger");
 
 class AuthService {
@@ -38,6 +37,8 @@ class AuthService {
         );
 
         const user = await userRepository.create(filteredData);
+
+        await emailVerificationService.sendVerificationEmail(user);
 
         logger.info("User registered", {
             userId: user._id.toString(),

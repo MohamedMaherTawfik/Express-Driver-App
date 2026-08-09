@@ -1,6 +1,7 @@
 const authService = require("../services/authService");
 const asyncHandler = require("../utils/asyncHandler");
 const ApiResponse = require("../utils/response");
+const emailVerificationService = require("../services/emailVerificationService");
 
 class AuthController {
     register = asyncHandler(async (req, res) => {
@@ -51,6 +52,30 @@ class AuthController {
             res,
             null,
             "Logged out successfully"
+        );
+    });
+
+    verifyEmail = asyncHandler(async (req, res) => {
+        const user = await emailVerificationService.verifyEmail(
+            req.body.token
+        );
+        return ApiResponse.ok(
+            res,
+            user,
+            "Email verified successfully"
+        );
+    });
+
+    resendVerificationEmail = asyncHandler(async (req, res) => {
+
+        await emailVerificationService.resendVerificationEmail(
+            req.body.email
+        );
+
+        return ApiResponse.ok(
+            res,
+            null,
+            "Verification email sent successfully"
         );
     });
 }

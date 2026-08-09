@@ -16,6 +16,18 @@ class UserRepository {
     async create(userData) {
         return await User.create(userData);
     }
+
+    async markEmailAsVerified(userId) {
+        return await User.findByIdAndUpdate(
+            userId,
+            {
+                isEmailVerified: true
+            },
+            {
+                new: true
+            }
+        );
+    }
 }
 
 module.exports = new UserRepository();

@@ -9,6 +9,9 @@ let server;
 const startServer = async () => {
     try {
         await connectDB();
+        const mail = require("./config/mail");
+        await mail.verify();
+        logger.info("Mail server connected");
         await redisService.connect();
         server = app.listen(PORT, () => {
             logger.info(

@@ -58,8 +58,27 @@ const refreshTokenValidator = [
         .withMessage("Refresh token must be a string")
 ];
 
+const verifyEmailValidator = [
+    body("token")
+        .notEmpty()
+        .withMessage("Verification token is required")
+        .isString()
+        .withMessage("Verification token must be a string")
+];
+
+const resendVerificationEmailValidator = [
+    body("email")
+        .notEmpty()
+        .withMessage("Email is required")
+        .isEmail()
+        .withMessage("Invalid email")
+        .normalizeEmail()
+];
+
 module.exports = {
     registerValidator,
     loginValidator,
-    refreshTokenValidator
+    refreshTokenValidator,
+    verifyEmailValidator,
+    resendVerificationEmailValidator
 };

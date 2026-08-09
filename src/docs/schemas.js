@@ -108,7 +108,31 @@ module.exports = {
                 example: "a8f4c9d2e7..."
             }
         }
-    }, 
+    },
 
-    
+
+    VerifyEmailRequest: {
+        type: "object",
+        required: ["token"],
+        properties: {
+            token: {
+                type: "string",
+                example: "a1b2c3d4e5f6..."
+            }
+        }
+    },
+
+    ResendVerificationRequest: {
+        type: "object",
+        required: ["email"],
+        properties: {
+            email: {
+                type: "string",
+                format: "email",
+                example: "mohamed@test.com"
+            }
+        }
+    },
+
+
 };

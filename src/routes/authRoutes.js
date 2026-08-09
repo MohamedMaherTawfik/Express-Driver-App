@@ -1,11 +1,18 @@
 const express = require("express");
 
 const authController = require("../controllers/authController");
-
+const loginRateLimiter = require("../middlewares/loginRateLimiter");
+const registerRateLimiter = require("../middlewares/registerRateLimiter");
+const refreshTokenRateLimiter = require("../middlewares/refreshTokenRateLimiter");
+const resendVerificationRateLimiter = require(
+    "../middlewares/resendVerificationRateLimiter"
+);
 const {
     registerValidator,
     loginValidator,
-    refreshTokenValidator
+    refreshTokenValidator,
+    verifyEmailValidator,
+    resendVerificationEmailValidator
 } = require("../validators/authValidator");
 
 const protect = require("../middlewares/protectMiddleware");
@@ -45,6 +52,7 @@ const router = express.Router();
  */
 router.post(
     "/register",
+    registerRateLimiter,
     registerValidator,
     validationMiddleware,
     authController.register
@@ -77,6 +85,7 @@ router.post(
  */
 router.post(
     "/login",
+    loginRateLimiter,
     loginValidator,
     validationMiddleware,
     authController.login
@@ -115,6 +124,7 @@ router.post(
  */
 router.post(
     "/refresh",
+    refreshTokenRateLimiter,
     refreshTokenValidator,
     validationMiddleware,
     authController.refreshToken
@@ -178,6 +188,78 @@ router.post(
     refreshTokenValidator,
     validationMiddleware,
     authController.logout
+);
+
+/**
+ * @swagger
+ * /api/auth/verify-email:
+ *   post:
+ *     summary: Verify user email
+ *     description: Verifies the user's email address using the verification token sent by email.
+ *     tags: [Authentication]
+ *
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyEmailRequest'
+ *
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UserResponse'
+ *
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ */
+router.post(
+    "/verify-email",
+    verifyEmailValidator,
+    validationMiddleware,
+    authController.verifyEmail
+);
+
+/**
+ * @swagger
+ * /api/auth/resend-verification:
+ *   post:
+ *     summary: Resend verification email
+ *     description: Sends a new email verification token to the user.
+ *     tags: [Authentication]
+ *
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResendVerificationRequest'
+ *
+ *     responses:
+ *       200:
+ *         description: Verification email sent successfully
+ *
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *
+ *       429:
+ *         description: Too many verification email requests
+ */
+router.post(
+    "/resend-verification",
+    resendVerificationRateLimiter,
+    resendVerificationEmailValidator,
+    validationMiddleware,
+    authController.resendVerificationEmail
 );
 
 module.exports = router;

@@ -134,5 +134,34 @@ module.exports = {
         }
     },
 
+    ForgotPasswordRequest: {
+        type: "object",
+        required: ["email"],
+        properties: {
+            email: {
+                type: "string",
+                format: "email",
+                example: "mohamed@test.com"
+            }
+        }
+    },
+
+    ResetPasswordRequest: {
+        type: "object",
+        required: ["token", "password"],
+        properties: {
+            token: {
+                type: "string",
+                example: "a1b2c3d4e5f6..."
+            },
+            password: {
+                type: "string",
+                format: "password",
+                minLength: 8,
+                example: "NewPassword123!"
+            }
+        }
+    },
+
 
 };

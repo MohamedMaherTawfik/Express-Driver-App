@@ -1,15 +1,15 @@
 require("dotenv-safe").config();
 const app = require("./app");
-const connectDB = require("./config/db");
-const redisService = require("./services/redisService");
-const logger = require("./config/logger");
+const connectDB = require("./shared/config/db");
+const redisService = require("./infrastructure/redis/redisService");
+const logger = require("./shared/config/logger");
 const mongoose = require("mongoose");
 const PORT = process.env.PORT || 3000;
 let server;
 const startServer = async () => {
     try {
         await connectDB();
-        const mail = require("./config/mail");
+        const mail = require("./infrastructure/email/mail");
         await mail.verify();
         logger.info("Mail server connected");
         await redisService.connect();

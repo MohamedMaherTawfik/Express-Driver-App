@@ -119,7 +119,7 @@ class EmailVerificationService {
         await emailService.sendEmail({
 
             to: user.email,
-
+            priority: 5,
             subject: "Verify your email",
 
             text: `

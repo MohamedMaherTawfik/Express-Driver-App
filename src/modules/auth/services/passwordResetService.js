@@ -84,6 +84,7 @@ class PasswordResetService {
 
         await emailService.sendEmail({
             to: user.email,
+            priority: 1,
             ...emailContent
         });
 

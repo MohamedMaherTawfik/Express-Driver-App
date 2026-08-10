@@ -62,6 +62,14 @@ class RefreshTokenRepository {
             }
         );
     }
+
+    async deleteExpired() {
+        return await RefreshToken.deleteMany({
+            expiresAt: {
+                $lt: new Date()
+            }
+        });
+    }
 }
 
 module.exports = new RefreshTokenRepository();

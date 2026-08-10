@@ -5,6 +5,10 @@ const redisService = require("./infrastructure/redis/redisService");
 const logger = require("./shared/config/logger");
 const mongoose = require("mongoose");
 const PORT = process.env.PORT || 3000;
+const emailWorker = require("./infrastructure/queue/emailWorker");
+const maintenanceWorker = require("./infrastructure/queue/maintenanceWorker");
+const startScheduler = require("./infrastructure/scheduler/scheduler");
+
 let server;
 const startServer = async () => {
     try {
@@ -13,6 +17,7 @@ const startServer = async () => {
         await mail.verify();
         logger.info("Mail server connected");
         await redisService.connect();
+        startScheduler();
         server = app.listen(PORT, () => {
             logger.info(
                 `🚀 Server running on http://localhost:${PORT}`
@@ -35,6 +40,8 @@ const shutdown = async (signal) => {
     logger.warn(`${signal} received. Shutting down server...`);
     if (server) {
         server.close(async () => {
+            await emailWorker.close();
+            await maintenanceWorker.close();
             await redisService.disconnect();
             await mongoose.connection.close();
             logger.info("MongoDB connection closed.");

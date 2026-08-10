@@ -1,4 +1,4 @@
-const mail = require("./mail");
+const emailProducer = require("../queue/emailProducer");
 const logger = require("../../shared/config/logger");
 
 class EmailService {
@@ -7,36 +7,33 @@ class EmailService {
         to,
         subject,
         text,
-        html
+        html,
+        delay = 0,
+        priority = 0
     }) {
 
         try {
 
-            const info = await mail.sendMail({
-
-                from: process.env.MAIL_FROM,
-
+            const job = await emailProducer.addEmailJob({
                 to,
-
                 subject,
-
                 text,
-
-                html
-
+                html,
+                delay,
+                priority
             });
 
-            logger.info("Email sent", {
-                messageId: info.messageId,
+            logger.info("Email job queued", {
+                jobId: job.id,
                 to,
                 subject
             });
 
-            return info;
+            return job;
 
         } catch (error) {
 
-            logger.error("Email sending failed", {
+            logger.error("Email queue failed", {
                 to,
                 subject,
                 message: error.message,
@@ -46,7 +43,6 @@ class EmailService {
             throw error;
         }
     }
-
 }
 
 module.exports = new EmailService();

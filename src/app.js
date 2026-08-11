@@ -18,6 +18,7 @@ const requestLogger = require("./shared/middlewares/requestLogger");
 const app = express();
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs/swagger");
+const notificationRoutes = require("./modules/notifications/routes/notificationRoutes");
 /* ===========================
         App Settings
 =========================== */
@@ -72,6 +73,11 @@ app.use("/authors", apiKey, upload.none(), authorRoutes);
 app.use("/books", apiKey, bookRoutes);
 
 app.use("/health", healthRoutes);
+
+app.use(
+    "/api/notifications",
+    notificationRoutes
+);
 /* ===========================
         404 Handler
 =========================== */

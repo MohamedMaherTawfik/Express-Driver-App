@@ -25,7 +25,11 @@ class BookController {
     });
 
     createBook = asyncHandler(async (req, res) => {
-        const book = await bookService.create(req.body, req.file);
+        const book = await bookService.create(
+            req.body,
+            req.file,
+            req.user.id
+        );
 
         return ApiResponse.created(
             res,
@@ -35,7 +39,7 @@ class BookController {
     });
 
     updateBook = asyncHandler(async (req, res) => {
-        const book = await bookService.update(req.params.id, req.body, req.file);
+        const book = await bookService.update(req.params.id, req.body, req.file, req.user.id);
 
         return ApiResponse.ok(
             res,
@@ -45,7 +49,7 @@ class BookController {
     });
 
     deleteBook = asyncHandler(async (req, res) => {
-        await bookService.delete(req.params.id);
+        await bookService.delete(req.params.id, req.user.id);
 
         return ApiResponse.noContent(res);
     });

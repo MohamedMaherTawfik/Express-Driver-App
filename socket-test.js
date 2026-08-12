@@ -1,6 +1,6 @@
 const { io } = require("socket.io-client");
 
-const ACCESS_TOKEN = "PUT_YOUR_ACCESS_TOKEN_HERE";
+const ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YTdiNjRmODEyODJjMzkyZGQwMzc2ZmUiLCJyb2xlIjoidXNlciIsImlhdCI6MTc4NjUxMjk3MCwiZXhwIjoxNzg2NTE2NTcwLCJhdWQiOiJzdGFydGVyLWtpdC1jbGllbnQiLCJpc3MiOiJzdGFydGVyLWtpdC1hcGkifQ.q6V7SiqMai1NIa323CTGVOZFydWvXuOAYo7IoTzamO0"
 
 const socket = io("http://localhost:3000", {
     auth: {

@@ -6,15 +6,18 @@ const responses = require("./responses");
 const options = {
     definition: {
         openapi: "3.0.0",
+
         info: {
             title: "Express Starter API",
             version: "1.0.0"
         },
+
         servers: [
             {
                 url: "http://localhost:3000"
             }
         ],
+
         components: {
             securitySchemes: {
                 bearerAuth: {
@@ -23,12 +26,16 @@ const options = {
                     bearerFormat: "JWT"
                 }
             },
+
             schemas,
+
             responses
         }
     },
+
     apis: [
-        "./src/routes/*.js"
+        "./src/modules/**/routes/*.js",
+        "./src/docs/**/*.js"
     ]
 };
 

@@ -6,12 +6,13 @@ const redis = require("../../infrastructure/redis/redis");
 const createRateLimiter = ({
     windowMs = 15 * 60 * 1000,
     max = 100,
-    message = "Too many requests. Please try again later."
+    message = "Too many requests. Please try again later.",
+    prefix = "rate-limit"
 } = {}) => {
-
     return rateLimit({
-
         store: new RedisStore({
+            prefix,
+
             sendCommand: (...args) => redis.call(...args)
         }),
 
@@ -27,9 +28,7 @@ const createRateLimiter = ({
             success: false,
             message
         }
-
     });
-
 };
 
 module.exports = createRateLimiter;

@@ -4,6 +4,12 @@ const logger = require("../../shared/config/logger");
 
 let io;
 
+/*
+|--------------------------------------------------------------------------
+| Initialize Socket.IO
+|--------------------------------------------------------------------------
+*/
+
 const initializeSocket = (httpServer) => {
     io = new Server(httpServer, {
         cors: {
@@ -26,25 +32,28 @@ const initializeSocket = (httpServer) => {
                     "Bearer ",
                     ""
                 );
+
             if (!token) {
                 return next(
                     new Error("Authentication token required")
                 );
             }
+
             const decoded = jwt.verify(
                 token,
                 process.env.JWT_SECRET
             );
+
             socket.user = decoded;
+
             next();
         } catch (error) {
             logger.warn("Socket authentication failed", {
                 socketId: socket.id,
                 message: error.message
             });
-            next(
-                new Error("Invalid or expired token")
-            );
+
+            next(new Error("Invalid or expired token"));
         }
     });
 
@@ -53,31 +62,39 @@ const initializeSocket = (httpServer) => {
     | Connection
     |--------------------------------------------------------------------------
     */
+
     io.on("connection", (socket) => {
         const userId = socket.user?.id;
+
         logger.info("Socket client connected", {
             socketId: socket.id,
             userId
         });
+
         /*
         |--------------------------------------------------------------------------
         | User Room
         |--------------------------------------------------------------------------
         */
+
         if (userId) {
             const userRoom = `user:${userId}`;
+
             socket.join(userRoom);
+
             logger.info("Socket joined user room", {
                 socketId: socket.id,
                 userId,
                 room: userRoom
             });
         }
+
         /*
         |--------------------------------------------------------------------------
         | Disconnect
         |--------------------------------------------------------------------------
         */
+
         socket.on("disconnect", (reason) => {
             logger.info("Socket client disconnected", {
                 socketId: socket.id,
@@ -86,7 +103,9 @@ const initializeSocket = (httpServer) => {
             });
         });
     });
+
     logger.info("Socket.IO initialized");
+
     return io;
 };
 

@@ -16,19 +16,19 @@ class AuthorController {
     });
 
     createAuthor = asyncHandler(async (req, res) => {
-        const author = await authorService.create(req.body);
+        const author = await authorService.create(req.body, req.user.id);
 
         return ApiResponse.created(res, author);
     });
 
     updateAuthor = asyncHandler(async (req, res) => {
-        const author = await authorService.update(req.params.id, req.body);
+        const author = await authorService.update(req.params.id, req.body, req.user.id);
 
         return ApiResponse.ok(res, author);
     });
 
     deleteAuthor = asyncHandler(async (req, res) => {
-        const author = await authorService.delete(req.params.id);
+        const author = await authorService.delete(req.params.id, req.user.id);
 
         return ApiResponse.ok(res, author);
     });

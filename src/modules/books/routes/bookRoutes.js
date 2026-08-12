@@ -105,13 +105,13 @@ router.get("/:id", bookController.getSingleBook);
  */
 router.post(
     "/",
+    protect,
     upload.single("image"),
     validateImage,
     createBookValidator,
     validationMiddleware,
     bookController.createBook
 );
-
 
 
 /**

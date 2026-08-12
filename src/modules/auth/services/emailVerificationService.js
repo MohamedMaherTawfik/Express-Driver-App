@@ -6,6 +6,7 @@ const userRepository = require("../../users/repositories/userRepository");
 const UnauthorizedError = require("../../../shared/errors/UnauthorizedError");
 const logger = require("../../../shared/config/logger");
 const BadRequestError = require("../../../shared/errors/BadRequestError");
+const notificationService = require("../../notifications/services/notificationService");
 
 class EmailVerificationService {
 
@@ -105,6 +106,16 @@ class EmailVerificationService {
         logger.info("Email verified", {
             userId: user._id.toString(),
             email: user.email
+        });
+
+        await notificationService.createNotification({
+            userId: user._id.toString(),
+            type: "email_verified",
+            title: "Email Verified",
+            message: "Your email address has been verified successfully.",
+            data: {
+                userId: user._id.toString()
+            }
         });
 
         return user;

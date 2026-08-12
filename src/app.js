@@ -19,6 +19,7 @@ const app = express();
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs/swagger");
 const notificationRoutes = require("./modules/notifications/routes/notificationRoutes");
+
 /* ===========================
         App Settings
 =========================== */

@@ -4,14 +4,15 @@ const authorRepository = require("../../authors/repositories/authorRepository");
 const bookRepository = require("../repositories/bookRepository");
 const pick = require("../../../shared/helpers/pickHelper");
 const bookQueryHelper = require("../helpers/bookQueryHelper");
-
+const notificationService = require("../../notifications/services/notificationService");
+const userRepository = require("../../users/repositories/userRepository");
 const cloudinaryService = require("../../../infrastructure/cloudinary/cloudinaryService");
-
 const logger = require("../../../shared/config/logger");
 const redisService = require("../../../infrastructure/redis/redisService");
 const {
     buildCacheKey
 } = require("../../../shared/helpers/cacheKeyHelper");
+
 
 class BookService {
 
@@ -62,27 +63,48 @@ class BookService {
         return book;
     }
 
-    async create(bookData, file) {
+    async create(bookData, file, userId) {
         await this.ensureAuthorExists(bookData.author);
+
         let image = null;
+
         if (file) {
             image = await cloudinaryService.uploadImage(file);
         }
-        const filteredData = pick(bookData, ["title", "pages", "price", "author"]);
+
+        const filteredData = pick(
+            bookData,
+            ["title", "pages", "price", "author"]
+        );
+
         if (image) {
             filteredData.image = image;
         }
+
         const book = await bookRepository.create(filteredData);
+
+        await notificationService.createNotification({
+            userId,
+            type: "book_created",
+            title: "Book Created",
+            message: `The book "${book.title}" was created successfully.`,
+            data: {
+                bookId: book._id.toString()
+            }
+        });
+
         await redisService.deleteByPrefix("books:list");
+
         logger.info("Book created", {
             bookId: book._id.toString(),
             title: book.title,
             authorId: book.author.toString()
         });
+
         return book;
     }
 
-    async update(id, bookData, file) {
+    async update(id, bookData, file, userId) {
         const book = await bookRepository.findById(id);
         if (!book) {
             throw new NotFoundError("Book");
@@ -99,6 +121,17 @@ class BookService {
             id,
             updateData
         );
+
+        await notificationService.createNotification({
+            userId,
+            type: "book_updated",
+            title: "Book Updated",
+            message: `The book "${updatedBook.title}" was updated successfully.`,
+            data: {
+                bookId: updatedBook._id.toString()
+            }
+        });
+
         await redisService.deleteByPrefix("books:list");
         logger.info("Book updated", {
             bookId: updatedBook._id.toString(),
@@ -107,7 +140,7 @@ class BookService {
         return updatedBook;
     }
 
-    async delete(id) {
+    async delete(id, userId) {
 
         const book = await bookRepository.findById(id);
 
@@ -118,6 +151,17 @@ class BookService {
         await this.deleteImageIfExists(book);
 
         await bookRepository.deleteById(id);
+
+        await notificationService.createNotification({
+            userId,
+            type: "book_deleted",
+            title: "Book Deleted",
+            message: `The book "${book.title}" was deleted successfully.`,
+            data: {
+                bookId: book._id.toString()
+            }
+        });
+
         await redisService.deleteByPrefix("books:list");
         logger.info("Book deleted", {
             bookId: book._id.toString(),

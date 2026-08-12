@@ -14,6 +14,7 @@ const passwordResetTokenRepository = require(
 );
 const emailService = require("../../../infrastructure/email/emailService");
 const logger = require("../../../shared/config/logger");
+const notificationService = require("../../notifications/services/notificationService");
 
 class PasswordResetService {
 
@@ -152,6 +153,16 @@ class PasswordResetService {
         logger.info("Password reset successfully", {
             userId: user._id.toString(),
             email: user.email
+        });
+
+        await notificationService.createNotification({
+            userId: user._id.toString(),
+            type: "password_reset",
+            title: "Password Reset",
+            message: "Your password has been reset successfully.",
+            data: {
+                userId: user._id.toString()
+            }
         });
 
         return user;

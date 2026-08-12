@@ -9,6 +9,7 @@ const pick = require("../../../shared/helpers/pickHelper");
 const userRepository = require("../../users/repositories/userRepository");
 const refreshTokenRepository = require("../repositories/refreshTokenRepository");
 const logger = require("../../../shared/config/logger");
+const notificationService = require("../../notifications/services/notificationService");
 
 class AuthService {
 
@@ -39,6 +40,16 @@ class AuthService {
         const user = await userRepository.create(filteredData);
 
         await emailVerificationService.sendVerificationEmail(user);
+
+        await notificationService.createNotification({
+            userId: user._id.toString(),
+            type: "user_registered",
+            title: "Welcome",
+            message: "Your account has been created successfully.",
+            data: {
+                userId: user._id.toString()
+            }
+        });
 
         logger.info("User registered", {
             userId: user._id.toString(),

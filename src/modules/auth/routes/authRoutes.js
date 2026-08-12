@@ -22,6 +22,7 @@ const {
 
 const protect = require("../../../shared/middlewares/protectMiddleware");
 const validationMiddleware = require("../../../shared/middlewares/validationMiddleware");
+const upload = require("../../../shared/middlewares/upload");
 
 const router = express.Router();
 
@@ -58,6 +59,7 @@ const router = express.Router();
 router.post(
     "/register",
     registerRateLimiter,
+    upload.none(),
     registerValidator,
     validationMiddleware,
     authController.register
@@ -91,6 +93,7 @@ router.post(
 router.post(
     "/login",
     loginRateLimiter,
+    upload.none(),
     loginValidator,
     validationMiddleware,
     authController.login

@@ -9,7 +9,7 @@ module.exports = (obj, allowedFields) => {
     return allowedFields.reduce((result, field) => {
         if (obj[field] !== undefined) {
             result[field] = obj[field];
-        }
+        }   
         return result;
     }, {});
 };

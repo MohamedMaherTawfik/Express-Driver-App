@@ -10,8 +10,6 @@ const apiKey = require("./shared/middlewares/checkApiKey");
 const upload = require("./shared/middlewares/upload");
 const errorMiddleware = require("./shared/middlewares/errorMiddleware");
 const NotFoundError = require("./shared/errors/NotFoundError");
-const authorRoutes = require("./modules/authors/routes/authorRoutes");
-const bookRoutes = require("./modules/books/routes/bookRoutes");
 const authRoutes = require("./modules/auth/routes/authRoutes");
 const healthRoutes = require("./shared/routes/healthRoutes");
 const requestLogger = require("./shared/middlewares/requestLogger");
@@ -68,10 +66,6 @@ app.use("/uploads", express.static("src/uploads"));
 =========================== */
 
 app.use("/api/auth", authRoutes);
-
-app.use("/authors", apiKey, upload.none(), authorRoutes);
-
-app.use("/books", apiKey, bookRoutes);
 
 app.use("/health", healthRoutes);
 

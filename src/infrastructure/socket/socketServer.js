@@ -64,7 +64,7 @@ const initializeSocket = (httpServer) => {
     */
 
     io.on("connection", (socket) => {
-        const userId = socket.user?.id;
+        const userId = socket.user?.sub;
 
         logger.info("Socket client connected", {
             socketId: socket.id,

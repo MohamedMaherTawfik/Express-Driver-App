@@ -5,7 +5,7 @@ const logger = require("../../shared/config/logger");
 
 class CloudinaryService {
 
-    uploadImage(file, folder = "books") {
+    uploadImage(file, folder = "general") {
 
         return new Promise((resolve, reject) => {
 

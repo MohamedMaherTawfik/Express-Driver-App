@@ -163,5 +163,61 @@ module.exports = {
         }
     },
 
+    /**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Category:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           example: 66b123456789abcdef123456
+ *         name:
+ *           type: string
+ *           minLength: 3
+ *           maxLength: 50
+ *           example: Electronics
+ *         description:
+ *           type: string
+ *           maxLength: 1000
+ *           example: Electronic devices and accessories
+ *         image:
+ *           type: string
+ *           nullable: true
+ *           example: https://example.com/images/electronics.jpg
+ *         slug:
+ *           type: string
+ *           example: electronics
+ *         isDeleted:
+ *           type: boolean
+ *           example: false
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *
+ *     CategoryInput:
+ *       type: object
+ *       required:
+ *         - name
+ *       properties:
+ *         name:
+ *           type: string
+ *           minLength: 3
+ *           maxLength: 50
+ *           example: Electronics
+ *         description:
+ *           type: string
+ *           maxLength: 1000
+ *           example: Electronic devices and accessories
+ *         image:
+ *           type: string
+ *           nullable: true
+ *           example: https://example.com/images/electronics.jpg
+ */
+
 
 };

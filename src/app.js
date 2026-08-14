@@ -12,6 +12,8 @@ const errorMiddleware = require("./shared/middlewares/errorMiddleware");
 const NotFoundError = require("./shared/errors/NotFoundError");
 const authRoutes = require("./modules/auth/routes/authRoutes");
 const healthRoutes = require("./shared/routes/healthRoutes");
+const driverRoutes = require("./modules/drivers/routes/driverRoutes");
+const driverApplicationRoutes = require("./modules/driverApplications/routes/driverApplicationRoutes");
 const requestLogger = require("./shared/middlewares/requestLogger");
 const app = express();
 const swaggerUi = require("swagger-ui-express");
@@ -72,6 +74,16 @@ app.use("/health", healthRoutes);
 app.use(
     "/api/notifications",
     notificationRoutes
+);
+
+app.use(
+    "/api/drivers",
+    driverRoutes
+);
+
+app.use(
+    "/api/driver-applications",
+    driverApplicationRoutes
 );
 /* ===========================
         404 Handler

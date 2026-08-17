@@ -16,6 +16,7 @@ const healthRoutes = require("./shared/routes/healthRoutes");
 const driverRoutes = require("./modules/drivers/routes/driverRoutes");
 const driverApplicationRoutes = require("./modules/driverApplications/routes/driverApplicationRoutes");
 const vehicleRoutes = require("./modules/vehicles/routes/vehicleRoutes");
+const serviceRoutes = require("./modules/services/routes/serviceRoutes");
 const requestLogger = require("./shared/middlewares/requestLogger");
 const app = express();
 const swaggerUi = require("swagger-ui-express");
@@ -92,6 +93,11 @@ app.use(
 app.use(
     "/api/vehicles",
     vehicleRoutes
+);
+
+app.use(
+    "/api/services",
+    serviceRoutes
 );
 /* ===========================
         404 Handler

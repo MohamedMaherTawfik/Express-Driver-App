@@ -48,8 +48,10 @@ const normalizeError = (err) => {
     }
 
     if (err.code === 11000) {
+        const field = err.keyValue ? Object.keys(err.keyValue)[0] : "field";
+        const formattedField = field.charAt(0).toUpperCase() + field.slice(1);
         return new AppError(
-            "Duplicate field value",
+            `${formattedField} already exists.`,
             httpStatus.BAD_REQUEST
         );
     }

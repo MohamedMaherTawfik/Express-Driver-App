@@ -67,8 +67,10 @@ class ServiceService {
             throw new BadRequestError("A service with this slug already exists.");
         }
 
-        // Check duplicate name
-        const existingName = await serviceRepository.findOne({ name });
+        // Check duplicate name (case-insensitive)
+        const existingName = await serviceRepository.findOne({
+            name: { $regex: new RegExp(`^${name.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}$`, "i") }
+        });
         if (existingName) {
             throw new BadRequestError("A service with this name already exists.");
         }
@@ -212,10 +214,10 @@ class ServiceService {
             }
         }
 
-        // Check duplicate name if name is updated
+        // Check duplicate name if name is updated (case-insensitive)
         if (updateData.name && updateData.name.trim() !== service.name) {
             const duplicateName = await serviceRepository.findOne({
-                name: updateData.name.trim(),
+                name: { $regex: new RegExp(`^${updateData.name.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}$`, "i") },
                 _id: { $ne: id },
             });
             if (duplicateName) {
@@ -271,6 +273,14 @@ class ServiceService {
         }
 
         if (hardDelete) {
+            const mongoose = require("mongoose");
+            const Order = mongoose.models.Order;
+            if (Order) {
+                const isReferenced = await Order.exists({ service: id });
+                if (isReferenced) {
+                    throw new BadRequestError("Cannot hard delete service because it is referenced in existing orders.");
+                }
+            }
             await serviceRepository.deleteById(id);
         } else {
             // Default safe deactivation to preserve historical order integrity

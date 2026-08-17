@@ -1,4 +1,5 @@
 const Driver = require("../models/driver");
+const { DRIVER_AVAILABILITY_STATUS } = require("../constants/driverConstants");
 
 class DriverRepository {
 
@@ -35,6 +36,44 @@ class DriverRepository {
             new: true,
             runValidators: true,
         });
+    }
+
+    async claimAvailableDriver(id, options = {}) {
+        return Driver.findOneAndUpdate(
+            {
+                _id: id,
+                availabilityStatus: DRIVER_AVAILABILITY_STATUS.AVAILABLE,
+            },
+            {
+                $set: {
+                    availabilityStatus: DRIVER_AVAILABILITY_STATUS.BUSY,
+                },
+            },
+            {
+                new: true,
+                runValidators: true,
+                session: options.session || null,
+            }
+        );
+    }
+
+    async releaseBusyDriver(id, options = {}) {
+        return Driver.findOneAndUpdate(
+            {
+                _id: id,
+                availabilityStatus: DRIVER_AVAILABILITY_STATUS.BUSY,
+            },
+            {
+                $set: {
+                    availabilityStatus: DRIVER_AVAILABILITY_STATUS.AVAILABLE,
+                },
+            },
+            {
+                new: true,
+                runValidators: true,
+                session: options.session || null,
+            }
+        );
     }
 
     async deleteById(id) {

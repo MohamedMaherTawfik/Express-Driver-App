@@ -1,0 +1,81 @@
+const ORDER_STATUS = Object.freeze({
+    PENDING: "pending",
+    SEARCHING_DRIVER: "searching_driver",
+    DRIVER_ASSIGNED: "driver_assigned",
+    DRIVER_ARRIVING: "driver_arriving",
+    DRIVER_ARRIVED: "driver_arrived",
+    PICKED_UP: "picked_up",
+    IN_TRANSIT: "in_transit",
+    DELIVERED: "delivered",
+    CANCELLED: "cancelled",
+    FAILED: "failed",
+});
+
+/**
+ * Valid status transitions.
+ * Key = current status → Value = array of allowed next statuses.
+ */
+const ORDER_STATUS_TRANSITIONS = Object.freeze({
+    [ORDER_STATUS.PENDING]: [ORDER_STATUS.SEARCHING_DRIVER, ORDER_STATUS.CANCELLED],
+    [ORDER_STATUS.SEARCHING_DRIVER]: [ORDER_STATUS.DRIVER_ASSIGNED, ORDER_STATUS.CANCELLED, ORDER_STATUS.FAILED],
+    [ORDER_STATUS.DRIVER_ASSIGNED]: [ORDER_STATUS.DRIVER_ARRIVING, ORDER_STATUS.CANCELLED],
+    [ORDER_STATUS.DRIVER_ARRIVING]: [ORDER_STATUS.DRIVER_ARRIVED, ORDER_STATUS.CANCELLED],
+    [ORDER_STATUS.DRIVER_ARRIVED]: [ORDER_STATUS.PICKED_UP, ORDER_STATUS.CANCELLED],
+    [ORDER_STATUS.PICKED_UP]: [ORDER_STATUS.IN_TRANSIT, ORDER_STATUS.CANCELLED],
+    [ORDER_STATUS.IN_TRANSIT]: [ORDER_STATUS.DELIVERED, ORDER_STATUS.FAILED, ORDER_STATUS.CANCELLED],
+    [ORDER_STATUS.DELIVERED]: [],
+    [ORDER_STATUS.CANCELLED]: [],
+    [ORDER_STATUS.FAILED]: [],
+});
+
+/** Statuses from which a user (customer) can cancel. */
+const USER_CANCELLABLE_STATUSES = Object.freeze([
+    ORDER_STATUS.PENDING,
+    ORDER_STATUS.SEARCHING_DRIVER,
+    ORDER_STATUS.DRIVER_ASSIGNED,
+]);
+
+/** Terminal statuses — no further transitions allowed. */
+const TERMINAL_STATUSES = Object.freeze([
+    ORDER_STATUS.DELIVERED,
+    ORDER_STATUS.CANCELLED,
+    ORDER_STATUS.FAILED,
+]);
+
+/** Status transitions a driver is allowed to trigger. */
+const DRIVER_ALLOWED_TRANSITIONS = Object.freeze({
+    [ORDER_STATUS.DRIVER_ASSIGNED]: ORDER_STATUS.DRIVER_ARRIVING,
+    [ORDER_STATUS.DRIVER_ARRIVING]: ORDER_STATUS.DRIVER_ARRIVED,
+    [ORDER_STATUS.DRIVER_ARRIVED]: ORDER_STATUS.PICKED_UP,
+    [ORDER_STATUS.PICKED_UP]: ORDER_STATUS.IN_TRANSIT,
+    [ORDER_STATUS.IN_TRANSIT]: ORDER_STATUS.DELIVERED,
+});
+
+const ORDER_PAYMENT_STATUS = Object.freeze({
+    PENDING: "pending",
+    PAID: "paid",
+    FAILED: "failed",
+    REFUNDED: "refunded",
+});
+
+const ORDER_NOTIFICATION_TYPES = Object.freeze({
+    ORDER_CREATED: "order_created",
+    ORDER_CANCELLED: "order_cancelled",
+    ORDER_DELIVERED: "order_delivered",
+    DRIVER_ASSIGNED: "order_driver_assigned",
+    DRIVER_ARRIVING: "order_driver_arriving",
+    DRIVER_ARRIVED: "order_driver_arrived",
+    ORDER_PICKED_UP: "order_picked_up",
+    ORDER_IN_TRANSIT: "order_in_transit",
+    ORDER_FAILED: "order_failed",
+});
+
+module.exports = {
+    ORDER_STATUS,
+    ORDER_STATUS_TRANSITIONS,
+    USER_CANCELLABLE_STATUSES,
+    TERMINAL_STATUSES,
+    DRIVER_ALLOWED_TRANSITIONS,
+    ORDER_PAYMENT_STATUS,
+    ORDER_NOTIFICATION_TYPES,
+};

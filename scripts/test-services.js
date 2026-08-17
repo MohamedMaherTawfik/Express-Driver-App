@@ -1,3 +1,29 @@
+const Module = require("module");
+const originalRequire = Module.prototype.require;
+Module.prototype.require = function (id) {
+    if (id === "ioredis") {
+        const EventEmitter = require("events");
+        class MockRedis extends EventEmitter {
+            constructor() { super(); }
+            on() { return this; }
+            once() { return this; }
+            quit() { return Promise.resolve(); }
+        }
+        return MockRedis;
+    }
+    if (id === "bullmq") {
+        class MockQueue {
+            constructor() {}
+            add() { return Promise.resolve(); }
+        }
+        class MockWorker {
+            constructor() {}
+        }
+        return { Queue: MockQueue, Worker: MockWorker };
+    }
+    return originalRequire.apply(this, arguments);
+};
+
 const assert = require("assert");
 const { SERVICE_TYPE, SERVICE_STATUS, VEHICLE_TYPE } = require("../src/modules/services/constants/serviceConstants");
 const serviceService = require("../src/modules/services/services/serviceService");
@@ -300,6 +326,7 @@ async function runTests() {
     await test("13. Update service: duplicate name in update throws BadRequestError", async () => {
         const originalFindById = serviceRepository.findById;
         const originalFindOne = serviceRepository.findOne;
+        const originalUpdateById = serviceRepository.updateById;
 
         serviceRepository.findById = async () => ({
             _id: "660000000000000000000001",
@@ -307,11 +334,16 @@ async function runTests() {
             slug: "standard-delivery",
         });
 
-        serviceRepository.findOne = async ({ name }) => {
-            if (name === "Express Delivery") {
+        serviceRepository.findOne = async (query) => {
+            const hasExpressPattern = query.name && query.name.$regex && query.name.$regex.toString().includes("Express Delivery");
+            if (query.name === "Express Delivery" || hasExpressPattern) {
                 return { _id: "660000000000000000000002", name: "Express Delivery" };
             }
             return null;
+        };
+
+        serviceRepository.updateById = async () => {
+            throw new Error("Should not reach updateById on validation failure");
         };
 
         try {
@@ -326,6 +358,7 @@ async function runTests() {
         } finally {
             serviceRepository.findById = originalFindById;
             serviceRepository.findOne = originalFindOne;
+            serviceRepository.updateById = originalUpdateById;
         }
     });
 
@@ -333,6 +366,7 @@ async function runTests() {
     await test("14. Update service: duplicate slug in update throws BadRequestError", async () => {
         const originalFindById = serviceRepository.findById;
         const originalFindOne = serviceRepository.findOne;
+        const originalUpdateById = serviceRepository.updateById;
 
         serviceRepository.findById = async () => ({
             _id: "660000000000000000000001",
@@ -347,6 +381,10 @@ async function runTests() {
             return null;
         };
 
+        serviceRepository.updateById = async () => {
+            throw new Error("Should not reach updateById on validation failure");
+        };
+
         try {
             await assert.rejects(
                 async () => {
@@ -359,6 +397,7 @@ async function runTests() {
         } finally {
             serviceRepository.findById = originalFindById;
             serviceRepository.findOne = originalFindOne;
+            serviceRepository.updateById = originalUpdateById;
         }
     });
 

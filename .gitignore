@@ -17,8 +17,6 @@ lerna-debug.log*
 # ==========================
 # Environment Variables
 # ==========================
-.env
-.env.*
 !.env.example
 
 # ==========================
@@ -60,7 +58,6 @@ Desktop.ini
 # ==========================
 # IDEs
 # ==========================
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -101,3 +98,4 @@ public/uploads/
 # ==========================
 *.tgz
 *.gz
+config.bat

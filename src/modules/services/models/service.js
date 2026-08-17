@@ -81,6 +81,7 @@ const serviceSchema = new mongoose.Schema(
 );
 
 // Database indexes for efficient querying and uniqueness
+serviceSchema.index({ name: 1 }, { unique: true, collation: { locale: "en", strength: 2 } });
 serviceSchema.index({ status: 1, isActive: 1 });
 serviceSchema.index({ type: 1 });
 

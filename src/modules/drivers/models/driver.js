@@ -71,4 +71,6 @@ const driverSchema = new mongoose.Schema(
     }
 );
 
+driverSchema.index({ status: 1, availabilityStatus: 1, createdAt: 1 });
+
 module.exports = mongoose.model("Driver", driverSchema);

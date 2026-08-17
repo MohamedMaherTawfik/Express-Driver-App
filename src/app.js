@@ -11,9 +11,11 @@ const upload = require("./shared/middlewares/upload");
 const errorMiddleware = require("./shared/middlewares/errorMiddleware");
 const NotFoundError = require("./shared/errors/NotFoundError");
 const authRoutes = require("./modules/auth/routes/authRoutes");
+const userRoutes = require("./modules/users/routes/userRoutes");
 const healthRoutes = require("./shared/routes/healthRoutes");
 const driverRoutes = require("./modules/drivers/routes/driverRoutes");
 const driverApplicationRoutes = require("./modules/driverApplications/routes/driverApplicationRoutes");
+const vehicleRoutes = require("./modules/vehicles/routes/vehicleRoutes");
 const requestLogger = require("./shared/middlewares/requestLogger");
 const app = express();
 const swaggerUi = require("swagger-ui-express");
@@ -68,6 +70,7 @@ app.use("/uploads", express.static("src/uploads"));
 =========================== */
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 app.use("/health", healthRoutes);
 
@@ -84,6 +87,11 @@ app.use(
 app.use(
     "/api/driver-applications",
     driverApplicationRoutes
+);
+
+app.use(
+    "/api/vehicles",
+    vehicleRoutes
 );
 /* ===========================
         404 Handler

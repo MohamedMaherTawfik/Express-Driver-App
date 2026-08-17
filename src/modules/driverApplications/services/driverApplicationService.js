@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const driverApplicationRepository = require("../repositories/driverApplicationRepository");
 const applicationVehicleRepository = require("../repositories/applicationVehicleRepository");
 const driverRepository = require("../../drivers/repositories/driverRepository");
+const vehicleRepository = require("../../vehicles/repositories/vehicleRepository");
 
 const {
     DRIVER_APPLICATION_STATUS,
@@ -10,6 +11,7 @@ const {
 
 const NotFoundError = require("../../../shared/errors/NotFoundError");
 const BadRequestError = require("../../../shared/errors/BadRequestError");
+const notificationService = require("../../notifications/services/notificationService");
 
 class DriverApplicationService {
 
@@ -59,6 +61,17 @@ class DriverApplicationService {
 
             await session.commitTransaction();
 
+            // Send notification for application submission
+            await notificationService.createNotification({
+                userId: userId,
+                type: "driver_application_submitted",
+                title: "Application Submitted",
+                message: "Your driver application has been successfully submitted and is under review.",
+                data: {
+                    applicationId: application._id.toString()
+                }
+            }).catch(err => console.error("Notification error:", err));
+
             // Return the full application with the vehicle populated.
             return driverApplicationRepository.findById(application._id);
 
@@ -107,12 +120,26 @@ class DriverApplicationService {
             );
         }
 
-        return driverApplicationRepository.updateById(id, {
+        const updatedApplication = await driverApplicationRepository.updateById(id, {
             status: DRIVER_APPLICATION_STATUS.REJECTED,
             rejectionReason,
             reviewedAt: new Date(),
             reviewedBy: adminId,
         });
+
+        // Send notification for application rejection
+        await notificationService.createNotification({
+            userId: application.user.toString(),
+            type: "driver_application_rejected",
+            title: "Application Rejected",
+            message: "Unfortunately, your driver application has been rejected.",
+            data: {
+                applicationId: updatedApplication._id.toString(),
+                reason: rejectionReason
+            }
+        }).catch(err => console.error("Notification error:", err));
+
+        return updatedApplication;
     }
 
     /**
@@ -180,18 +207,54 @@ class DriverApplicationService {
                 { session }
             );
 
+            // Generate driver ID to link vehicle and driver bidirectional/correctly
+            const driverId = new mongoose.Types.ObjectId();
+
+            if (!application.vehicle) {
+                throw new BadRequestError("Application has no associated vehicle details.");
+            }
+
+            // Create the actual Vehicle entity.
+            const vehicle = await vehicleRepository.create(
+                {
+                    driver: driverId,
+                    type: application.vehicle.type,
+                    make: application.vehicle.make,
+                    model: application.vehicle.model,
+                    year: application.vehicle.year,
+                    color: application.vehicle.color,
+                    plateNumber: application.vehicle.plateNumber,
+                },
+                { session }
+            );
+
             // Create the actual Driver entity.
             await driverRepository.create(
                 {
+                    _id: driverId,
                     user: application.user,
                     application: application._id,
                     licenseNumber: application.licenseNumber,
                     approvedAt: now,
+                    vehicle: vehicle._id,
                 },
                 { session }
             );
 
             await session.commitTransaction();
+
+            // Send notification for application approval
+            await notificationService.createNotification({
+                userId: application.user.toString(),
+                type: "driver_application_approved",
+                title: "Application Approved",
+                message: "Congratulations! Your driver application has been approved.",
+                data: {
+                    applicationId: application._id.toString(),
+                    driverId: driverId.toString(),
+                    vehicleId: vehicle._id.toString()
+                }
+            }).catch(err => console.error("Notification error:", err));
 
             // Return the updated application (with vehicle populated).
             return driverApplicationRepository.findById(id);

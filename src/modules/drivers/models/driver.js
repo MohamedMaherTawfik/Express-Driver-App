@@ -57,6 +57,14 @@ const driverSchema = new mongoose.Schema(
             trim: true,
             required: true,
         },
+
+        /*
+         * The active production vehicle this driver operates.
+         */
+        vehicle: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Vehicle",
+        },
     },
     {
         timestamps: true,

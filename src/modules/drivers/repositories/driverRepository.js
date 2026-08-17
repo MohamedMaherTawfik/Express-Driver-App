@@ -15,13 +15,15 @@ class DriverRepository {
     async findById(id) {
         return Driver.findById(id)
             .populate("user", "name email")
-            .populate("application");
+            .populate("application")
+            .populate("vehicle");
     }
 
     async findByUserId(userId) {
         return Driver.findOne({ user: userId })
             .populate("user", "name email")
-            .populate("application");
+            .populate("application")
+            .populate("vehicle");
     }
 
     async existsByUserId(userId) {
